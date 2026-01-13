@@ -58,6 +58,6 @@ class CartPendulumDynamics(DynamicsBase):
         """
         Return the output y = h(x).
         """
-        # y = P.Cy @ self.state
+        # y = P.Cm @ self.state
         y = self.state[:2].copy()  # measure position states only
         return y
