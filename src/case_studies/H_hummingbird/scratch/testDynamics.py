@@ -4,7 +4,8 @@
 # but we expect to check our dynamics after lab H.3. 
 
 import numpy as np
-from case_studies.H_hummingbird.dynamics import HummingbirdDynamics
+# ORIGINAL IMPORT: from case_studies.H_hummingbird.dynamics import hummingbird_dynamics
+from case_studies.H_hummingbird.hummingbird_dynamics import HummingbirdDynamics
 # x = [phi, theta, psi, phidot, thetadot, psidot]
 x_tests = np.array([
     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],

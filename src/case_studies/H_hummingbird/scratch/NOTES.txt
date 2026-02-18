@@ -1,0 +1,5 @@
+HOW TO RUN SHIT
+
+- ALWAYS RUN FROM /src
+- cd /Users/andemamongane/Documents/engineering/byu_controlbook_public/src
+- python3 -m case_studies.H_hummingbird.generate_KE

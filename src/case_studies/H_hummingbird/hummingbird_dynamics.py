@@ -4,9 +4,16 @@
 import numpy as np
 
 # local (controlbook)
-import params as P
-from common.dynamics_base import DynamicsBase
-import generate_eom
+
+# from case_studies import common, H_hummingbird
+# import case_studies.H_hummingbird.params as P
+# from case_studies.common.dynamics_base import DynamicsBase
+# from case_studies.H_hummingbird import generate_eom
+
+from . import params as P
+from ..common.dynamics_base import DynamicsBase
+# from . import generate_eom
+from . import eom_generated
 
 
 class HummingbirdDynamics(DynamicsBase):
@@ -31,24 +38,47 @@ class HummingbirdDynamics(DynamicsBase):
             "m1": self.randomize_parameter(P.m1, alpha),
             "m2": self.randomize_parameter(P.m2, alpha),
             "m3": self.randomize_parameter(P.m3, alpha),
-            "J_1x": self.randomize_parameter(P.J1x, alpha),
-            "J_1y": self.randomize_parameter(P.J1y, alpha),
-            "J_1z": self.randomize_parameter(P.J1z, alpha),
-            "J_2x": self.randomize_parameter(P.J2x, alpha),
-            "J_2y": self.randomize_parameter(P.J2y, alpha),
-            "J_2z": self.randomize_parameter(P.J2z, alpha),
-            "J_3x": self.randomize_parameter(P.J3x, alpha),
-            "J_3y": self.randomize_parameter(P.J3y, alpha),
-            "J_3z": self.randomize_parameter(P.J3z, alpha),
-            "ell_1": self.randomize_parameter(P.ell1, alpha),
-            "ell_2": self.randomize_parameter(P.ell2, alpha),
-            "ell_3x": self.randomize_parameter(P.ell3x, alpha),
-            "ell_3y": self.randomize_parameter(P.ell3y, alpha),
-            "ell_3z": self.randomize_parameter(P.ell3z, alpha),
-            "ell_T": self.randomize_parameter(P.ellT, alpha),
+            "J_1x": self.randomize_parameter(P.J_1x, alpha),
+            "J_1y": self.randomize_parameter(P.J_1y, alpha),
+            "J_1z": self.randomize_parameter(P.J_1z, alpha),
+            "J_2x": self.randomize_parameter(P.J_2x, alpha),
+            "J_2y": self.randomize_parameter(P.J_2y, alpha),
+            "J_2z": self.randomize_parameter(P.J_2z, alpha),
+            "J_3x": self.randomize_parameter(P.J_3x, alpha),
+            "J_3y": self.randomize_parameter(P.J_3y, alpha),
+            "J_3z": self.randomize_parameter(P.J_3z, alpha),
+            "ell_1": self.randomize_parameter(P.ell_1, alpha),
+            "ell_2": self.randomize_parameter(P.ell_2, alpha),
+            "ell_3x": self.randomize_parameter(P.ell_3x, alpha),
+            "ell_3y": self.randomize_parameter(P.ell_3y, alpha),
+            "ell_3z": self.randomize_parameter(P.ell_3z, alpha),
+            "ell_T": self.randomize_parameter(P.ell_T, alpha),
             "d": self.randomize_parameter(P.d, alpha),
             "g": P.g,
         }
+
+        # self.param_vals = [
+        #     self.eom_params["m1"],
+        #     self.eom_params["m2"],
+        #     self.eom_params["m3"],
+        #     self.eom_params["J_1x"],
+        #     self.eom_params["J_1y"],
+        #     self.eom_params["J_1z"],
+        #     self.eom_params["J_2x"],
+        #     self.eom_params["J_2y"],
+        #     self.eom_params["J_2z"],
+        #     self.eom_params["J_3x"],
+        #     self.eom_params["J_3y"],
+        #     self.eom_params["J_3z"],
+        #     self.eom_params["ell_1"],
+        #     self.eom_params["ell_2"],
+        #     self.eom_params["ell_3x"],
+        #     self.eom_params["ell_3y"],
+        #     self.eom_params["ell_3z"],
+        #     self.eom_params["ell_T"],
+        #     self.eom_params["d"],
+        #     self.eom_params["g"]
+        # ]
 
         p = self.eom_params
         self.km = P.g * (p["m1"] * p["ell_1"] + p["m2"] * p["ell_2"]) / p["ell_T"]
@@ -74,20 +104,22 @@ class HummingbirdDynamics(DynamicsBase):
 
 
     def calculate_M(self, x):
-        M = generate_eom.M_num(x, **self.eom_params)
+        M = eom_generated.calculate_M(x, **self.eom_params)
         return M
 
     def calculate_C(self, x):
-        C = generate_eom.C_num(x, **self.eom_params)
-        return C
+        C = eom_generated.calculate_C(x, **self.eom_params)
+        return C.flatten()
 
     def calculate_dP_dq(self, x):
-        dP_dq = generate_eom.dP_dq_num(x, **self.eom_params)
-        return dP_dq
+        dP_dq = eom_generated.calculate_dP_dq(x, **self.eom_params)
+        return dP_dq.flatten()
 
     def calculate_tau(self, x, u):
-        tau = generate_eom.tau_num(x, u, **self.eom_params)
-        return tau
+        x_ = x.reshape(-1, 1)
+        u_ = u.reshape(-1, 1)
+        tau = eom_generated.calculate_tau(x_, u_, **self.eom_params)
+        return tau.flatten()
 
     ############################################################################
 
@@ -104,8 +136,11 @@ class HummingbirdDynamics(DynamicsBase):
                 [phidot, thetadot, psidot, phiddot, thetaddot, psiddot]
         """
         # Ensure inputs are flattened for consistent indexing
-        x = x.flatten()
-        u = u.flatten()
+        # x = x.flatten()
+        # u = u.flatten()
+
+        x = x.reshape(-1, 1)
+        u = u.reshape(-1, 1)
         
         # Re-label terms for readability
         qdot = x[3:6].reshape((3, 1))
@@ -116,13 +151,21 @@ class HummingbirdDynamics(DynamicsBase):
         tau = self.calculate_tau(x, u)          # (3,1)
         Bqdot = self.B @ qdot                   # (3,1)
     
-        # Solve for qddot:  M qddot = tau - C - dP_dq - B qdot
-        rhs = tau - C - dP_dq - Bqdot
+        # Solve for qddot:  M @ qddot = tau - C - dP_dq - B qdot
+        rhs = tau.flatten() - C.flatten() - dP_dq.flatten() - Bqdot.flatten()
 
         #TODO: Find qddot using the equations of motion, then formulate and return xdot
         qddot = np.linalg.solve(M, rhs).flatten()   # (3,)
+        xdot = np.concatenate((x[3:6].flatten(), qddot))
 
-        xdot = np.concatenate((x[3:6], qddot))
+        # print()
+        # print(M.shape)
+        # print(C.shape)
+        # print(dP_dq.shape)
+        # print(tau.shape)
+        # print(Bqdot.shape)
+        # print()
+
         return xdot
 
     def h(self):
@@ -135,7 +178,7 @@ class HummingbirdDynamics(DynamicsBase):
             y (1D numpy array): output vector [phi, theta, psi]
         """
         #TODO: return the measured outputs based on self.state - these would be the first three states
-        y = self.state[0:3].copy()
+        y = self.state[0:3]#.copy()
         return y
 
     def update(self, pwm):
@@ -157,3 +200,68 @@ class HummingbirdDynamics(DynamicsBase):
         # call update from parent class (DynamicsBase)
         y = super().update(u)
         return y
+
+# system = HummingbirdDynamics()
+
+# x = np.zeros(6).reshape(-1, 1)
+# u = np.zeros(2).reshape(-1, 1)
+
+# print(system.f(x, u))
+
+def rk4_step(fn, x, u, dt):
+    """
+    Perform a numerical integration step using the 4th-order Runge-Kutta method
+    (RK4).
+
+    Args:
+        fn: Function that computes the derivative of the state. It should be a
+            function of the form fn(x, u) -> xdot.
+        x: Current state vector of the system (time-varying over the step).
+        u: Control input vector to the system (constant over the step).
+            Hint: for observers, the input (labeled here as u) would be the
+            measurement y.
+
+    returns:
+        x_next: State vector of the system after one time step.
+    """
+    k1 = fn(x, u)
+
+
+    k2 = fn(x + k1 * dt / 2, u)
+    k3 = fn(x + k2 * dt / 2, u)
+    k4 = fn(x + k3 * dt, u)
+    xdot = (k1 + 2 * k2 + 2 * k3 + k4) / 6
+    x_next = x + xdot * dt
+    return x_next
+
+
+x = np.zeros(6)
+u = np.zeros(2)
+system = HummingbirdDynamics()
+# fn = system.f
+dt = 0.001
+
+# k1 = fn(x, u)
+
+
+# k2 = fn(x + k1 * dt / 2, u)
+# k3 = fn(x + k2 * dt / 2, u)
+# k4 = fn(x + k3 * dt, u)
+# xdot = (k1 + 2 * k2 + 2 * k3 + k4) / 6
+# x_next = x + xdot * dt
+
+# print(f"x_next: {x_next}")
+
+# x0 = np.zeros(6)
+# u0 = np.zeros(2)
+# system = HummingbirdDynamics()
+
+x1 = rk4_step(system.f, x, u, dt)
+
+
+# system = HummingbirdDynamics()
+# def calculate_M(x):
+#     M = generate_eom.M_num(x, system.param_vals)
+#     return M
+
+# print(calculate_M(np.zeros(6).reshape(-1, 1)))

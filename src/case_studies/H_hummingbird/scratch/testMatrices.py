@@ -17,7 +17,8 @@ To regenerate this file, run: python generate_test_matrices.py
 """
 
 import numpy as np
-from case_studies.H_hummingbird.dynamics import HummingbirdDynamics
+from case_studies.H_hummingbird.hummingbird_dynamics import HummingbirdDynamics
+# from case_studies.H_hummingbird.hummingbird_dynamics import HummingbirdDynamics
 
 # x = [phi, theta, psi, phidot, thetadot, psidot]
 x_tests = np.array([
@@ -275,6 +276,11 @@ def test_all_matrices(verbose=True):
         # Test dP_dq vector
         dP_dq_student = system.calculate_dP_dq(x)
         if not np.allclose(dP_dq_student, dP_dq_exp, atol=tolerance):
+            print()
+            print(dP_dq_student)
+            print()
+            print(dP_dq_exp)
+            print()
             test_passed = False
             failures.append("dP_dq")
         
